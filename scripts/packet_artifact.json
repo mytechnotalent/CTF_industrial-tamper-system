@@ -1,0 +1,14 @@
+{
+  "format": "industrial-tamper-packets-demo-v1",
+  "frame_version": 1,
+  "node_address": 7,
+  "gateway_address_hex": "0001",
+  "frame_size": 48,
+  "alert_wait_ms": 5000,
+  "latch_close_pulse_us": 500,
+  "latch_open_pulse_us": 1500,
+  "dht_timeout_us": 240,
+  "lcd_i2c_address_hex": "27",
+  "max_rcv_len": 256,
+  "example_frame": "{\"cmd\":\"alert\",\"zone\":1}"
+}

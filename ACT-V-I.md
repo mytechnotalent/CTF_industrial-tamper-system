@@ -226,20 +226,20 @@ Addresses are drawn from `ACT-V-main-disasm.txt`:
 | Module | Anchor function | Address |
 |--------|-----------------|---------|
 | Entry | `main` | `0x10000234` |
-| Monitor / tamper state machine | `monitor_init` | `0x10006434` |
-| Monitor / tamper state machine | `monitor_step` | `0x100065C0` |
+| Monitor / tamper state machine | `monitor_init` | `0x10006444` |
+| Monitor / tamper state machine | `monitor_step` | `0x100065F8` |
 | Control (sealed tamper path) | `control_handle_frame` | `0x100074FC` |
 | Tamper authorization | `tamper_auth_apply` | `0x100076AC` |
-| Latch (actuator) | `latch_apply_command` | `0x100074B4` |
-| Latch (actuator) | `latch_fail_safe` | `0x10007528` |
-| Implant | `implant_infected` | `0x1000A1B0` |
+| Latch (actuator) | `latch_apply_command` | `0x100075C0` |
+| Latch (actuator) | `latch_fail_safe` | `0x10007634` |
+| Implant | `implant_infected` | `0x1000A2B8` |
 | Implant | `implant_tick` | `0x1000A2CC` |
 | Implant | `implant_handle_command` | `0x1000A358` |
 | Implant | `implant_init` | `0x1000A444` |
-| Crypto | `envelope_open_hex` | `0x10007848` |
-| Crypto | `crypto_aead_seal` | `0x100076B8` |
-| Crypto | `crypto_aead_tag_equal` | `0x1000766C` |
-| Radio | `radio_send_frame` | `0x1000A468` |
+| Crypto | `envelope_open_hex` | `0x10007950` |
+| Crypto | `crypto_aead_seal` | `0x100077C4` |
+| Crypto | `crypto_aead_tag_equal` | `0x10007778` |
+| Radio | `radio_send_frame` | `0x1000A570` |
 
 Annotated disassembly for the key functions is provided in
 `ACT-V-main-disasm.txt`. Use it as a map, then confirm every byte yourself.
@@ -331,11 +331,11 @@ the worm never needed it.
 
 This is an analysis obstacle, not a graded defect on its own. The implant reads
 CoreDebug `DHCSR` at `0xE000EDF0` and returns early while a probe is attached. In
-`implant_tick` the read is the `ldr.w r2, [ip, #3568]` at `0x1000A1D0`, the
-`lsls r1, r2, #30` at `0x1000A1D4` keeps `C_HALT` and `C_DEBUGEN`, and the
-`bne.n` at `0x1000A1D6` suppresses the propagation. The same register is read
-again at `0x1000A274` inside `implant_handle_command` to suppress the payload
-handler, and at `0x1000A2F2` and `0x1000A216` to stamp the frame body. It is
+`implant_tick` the read is the `ldr.w r2, [ip, #3568]` at `0x1000A2D8`, the
+`lsls r1, r2, #30` at `0x1000A2DC` keeps `C_HALT` and `C_DEBUGEN`, and the
+`bne.n` at `0x1000A2DE` suppresses the propagation. The same register is read
+again at `0x1000A37C` inside `implant_handle_command` to suppress the payload
+handler, and at `0x1000A31E` and `0x1000A3FA` to stamp the frame body. It is
 identical in both the compromised and corrected images. You must defeat it to
 observe the marker write before you patch the shipped artifact.
 
@@ -504,17 +504,18 @@ Flash in BOOTSEL mode (hold BOOT, plug in USB) and copy the UF2 onto the
 | CoreDebug `DHCSR` | `0xE000EDF0` | Anti-debug register read by the implant |
 | Implant reserved sector | `0x103FF000` | Infection marker target (sector) |
 | Implant tick counter | `0x200136EC` | Incremented once per `implant_tick` |
-| Implant arming flag | `0x20013CE7` | Set when the payload handler arms |
-| Implant marker gate | `0x20013CE8` | Gates the reserved-sector marker write |
-| Implant payload gate | `0x20013CE9` | Gates the raw-frame payload handler |
-| Implant propagation gate | `0x20013CEA` | Gates the mesh re-broadcast |
-| Implant propagation flag | `0x20013CEB` | Reports whether propagation is enabled |
-| Tamper command gate | `0x20013CE4` | Applied command after a true verdict |
+| Implant arming flag | `0x20013CEA` | Set when the payload handler arms |
+| Implant marker gate | `0x20013CEB` | Gates the reserved-sector marker write |
+| Implant payload gate | `0x20013CEC` | Gates the raw-frame payload handler |
+| Implant propagation gate | `0x20013CED` | Gates the mesh re-broadcast |
+| Implant propagation flag | `0x20013CEE` | Reports whether propagation is enabled |
+| Tamper command gate | `0x20013CE8` | Gates the sealed tamper command path |
+| Applied command | `0x20013CE7` | Applied command after a true verdict |
 | Tamper zone | `0x20013CDA` | Applied zone after a true verdict |
 | Auth state record | `0x200136AC` | Anti-replay and state-tag record |
 | Auth field key | `0x200136C8` | Derived field key for the tag |
-| Latch state | `0x20013CEC` | Shutter latch state |
-| Latch target | `0x20013CED` | Requested latch position |
+| Latch state | `0x20013CEF` | Shutter latch state |
+| Latch target | `0x20013CF0` | Requested latch position |
 
 The VA of any file offset is the file offset plus `0x10000000`. Every defect is a
 file offset and a VA that differ by exactly that base.
